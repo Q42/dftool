@@ -1,5 +1,5 @@
 First enable the Dialogflow API for each project:
-https://console.developers.google.com/apis/api/dialogflow.googleapis.com/overview?project=<YOURPROJECT>
+https://console.developers.google.com/apis/api/dialogflow.googleapis.com/overview?project=YOURPROJECT
 
 Make sure you have a serviceAccount.json with Dialogflow API Admin access to your projects.
 
