@@ -1,8 +1,10 @@
 {
   "name": "dftool",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A tool to export Dialogflow intents and config from one project and import them in another",
-  "keywords": ["dialogflow"],
+  "keywords": [
+    "dialogflow"
+  ],
   "bin": "./dftool.js",
   "author": "Q42",
   "license": "ISC",
