@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { exec } = require('child_process');
 const dialogflow = require('dialogflow');
+const tmp = require('tmp');
 
 const client = new dialogflow.AgentsClient({
   keyFilename: 'serviceAccount.json'
@@ -8,7 +9,7 @@ const client = new dialogflow.AgentsClient({
 
 // No async & await cause of Node 6
 
-function dfExport(fromProject) {
+function dfExport(fromProject, directory) {
   client.exportAgent({parent: 'projects/' + fromProject})
     .then(([operation]) => {
       // Operation#promise starts polling for the completion of the Long Running Operation:
@@ -26,7 +27,7 @@ function dfExport(fromProject) {
     .then(() => {
       console.log('Unzipping and deleting the zip');
       return new Promise((resolve, reject) => {
-        exec('unzip -o export.zip -d dialogflow && rm export.zip', (err) => {
+        exec('unzip -o export.zip -d ' + directory + ' && rm export.zip', (err) => {
           if (err) reject(err);
           else resolve();
         });
@@ -35,7 +36,7 @@ function dfExport(fromProject) {
     .then(() => {
       console.log('Reading agent.json');
       return new Promise((resolve, reject) => {
-        fs.readFile('dialogflow/agent.json', 'utf8', (err, data) => {
+        fs.readFile(directory + '/agent.json', 'utf8', (err, data) => {
           if (err) reject(err);
           else resolve(data);
         });
@@ -47,7 +48,7 @@ function dfExport(fromProject) {
       agent.googleAssistant.project = '<PLACEHOLDER>';
       agent.webhook.url = '<PLACEHOLDER>';
       return new Promise((resolve, reject) => {
-        fs.writeFile('dialogflow/agent.json', JSON.stringify(agent), (err) => {
+        fs.writeFile(directory + '/agent.json', JSON.stringify(agent), (err) => {
           if (err) reject(err);
           else resolve();
         });
@@ -57,12 +58,23 @@ function dfExport(fromProject) {
       console.error(err);
     });
 }
-function dfImport(toProject, webhookUrl) {
-  console.log('Reading agent.json');
+
+function dfImport(toProject, directory, webhookUrl) {
+  const tmpDir = tmp.dirSync({unsafeCleanup: true}).name;
+
+  console.log('Copying files to tmp dir: ' + tmpDir);
   new Promise((resolve, reject) => {
-    fs.readFile('dialogflow/agent.json', 'utf8', (err, data) => {
+    exec('cp -r ' + directory + '/* ' + tmpDir, (err) => {
       if (err) reject(err);
-      else resolve(data);
+      else resolve();
+    });
+  }).then(() => {
+    console.log('Reading agent.json');
+    return new Promise((resolve, reject) => {
+      fs.readFile(tmpDir + '/agent.json', 'utf8', (err, data) => {
+        if (err) reject(err);
+        else resolve(data);
+      });
     });
   }).then(file => {
     console.log('Setting agent.json project and webhook url');
@@ -70,23 +82,24 @@ function dfImport(toProject, webhookUrl) {
     agent.googleAssistant.project = toProject;
     agent.webhook.url = webhookUrl;
     return new Promise((resolve, reject) => {
-      fs.writeFile('dialogflow/agent.json', JSON.stringify(agent), (err) => {
+      fs.writeFile(tmpDir + '/agent.json', JSON.stringify(agent), (err) => {
         if (err) reject(err);
         else resolve();
       });
     });
   }).then(() => {
-    console.log('Zipping to import.zip');
+    const importZip = tmp.tmpNameSync() + '.zip';
+    console.log('Zipping to ' + importZip);
     return new Promise((resolve, reject) => {
-      exec('rm import.zip; cd dialogflow; zip -r ../import.zip *; cd ..', (err) => {
+      exec('cd ' + tmpDir + '; zip -r ' + importZip + ' *', (err) => {
         if (err) reject(err);
-        else resolve();
+        else resolve(importZip);
       });
     });
-  }).then(() => {
-    console.log('Reading import.zip');
+  }).then((importZip) => {
+    console.log('Reading zip');
     return new Promise((resolve, reject) => {
-      fs.readFile('import.zip', (err, data) => {
+      fs.readFile(importZip, (err, data) => {
         if (err) reject(err);
         else resolve(data);
       });
@@ -100,14 +113,6 @@ function dfImport(toProject, webhookUrl) {
   }).then(([operation]) => {
     // Operation#promise starts polling for the completion of the Long Running Operation:
     return operation.promise();
-  }).then(() => {
-    console.log('Deleting import.zip');
-    return new Promise((resolve, reject) => {
-      exec('rm import.zip', (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
   }).catch(err => {
     console.error(err);
   });

@@ -3,7 +3,8 @@
   "version": "0.1.1",
   "description": "A tool to export Dialogflow intents and config from one project and import them in another",
   "keywords": [
-    "dialogflow"
+    "dialogflow",
+    "google-cloud"
   ],
   "bin": "./dftool.js",
   "author": "Q42",
@@ -14,6 +15,7 @@
   },
   "dependencies": {
     "dialogflow": "^0.1.0",
+    "tmp": "0.0.33",
     "yargs": "^11.0.0"
   },
   "devDependencies": {

@@ -1299,6 +1299,11 @@
       "from": "os-locale@>=1.4.0 <2.0.0",
       "resolved": "https://registry.npmjs.org/os-locale/-/os-locale-1.4.0.tgz"
     },
+    "os-tmpdir": {
+      "version": "1.0.2",
+      "from": "os-tmpdir@>=1.0.2 <1.1.0",
+      "resolved": "https://registry.npmjs.org/os-tmpdir/-/os-tmpdir-1.0.2.tgz"
+    },
     "p-finally": {
       "version": "1.0.0",
       "from": "p-finally@>=1.0.0 <2.0.0",
@@ -1533,6 +1538,11 @@
       "version": "2.0.3",
       "from": "through2@>=2.0.3 <3.0.0",
       "resolved": "https://registry.npmjs.org/through2/-/through2-2.0.3.tgz"
+    },
+    "tmp": {
+      "version": "0.0.33",
+      "from": "tmp@latest",
+      "resolved": "https://registry.npmjs.org/tmp/-/tmp-0.0.33.tgz"
     },
     "tough-cookie": {
       "version": "2.3.4",
