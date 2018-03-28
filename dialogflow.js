@@ -16,18 +16,19 @@ function dfExport(fromProject, directory) {
       return operation.promise();
     })
     .then(([result]) => {
-      console.log('Writing export.zip');
+      const exportZip = tmp.tmpNameSync() + '.zip';
+      console.log('Writing ' + exportZip);
       return new Promise((resolve, reject) => {
-        fs.writeFile('export.zip', result.agentContent, (err) => {
+        fs.writeFile(exportZip, result.agentContent, (err) => {
           if (err) reject(err);
-          else resolve();
+          else resolve(exportZip);
         });
       });
     })
-    .then(() => {
-      console.log('Unzipping and deleting the zip');
+    .then((exportZip) => {
+      console.log('Unzipping to ' + directory);
       return new Promise((resolve, reject) => {
-        exec('unzip -o export.zip -d ' + directory + ' && rm export.zip', (err) => {
+        exec('rm -rf ' + directory + ' && unzip -o ' + exportZip + ' -d ' + directory, (err) => {
           if (err) reject(err);
           else resolve();
         });
@@ -48,7 +49,7 @@ function dfExport(fromProject, directory) {
       agent.googleAssistant.project = '<PLACEHOLDER>';
       agent.webhook.url = '<PLACEHOLDER>';
       return new Promise((resolve, reject) => {
-        fs.writeFile(directory + '/agent.json', JSON.stringify(agent), (err) => {
+        fs.writeFile(directory + '/agent.json', JSON.stringify(agent, null, 2), (err) => {
           if (err) reject(err);
           else resolve();
         });
